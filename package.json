@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development vite build --watch",
     "build": "cross-env NODE_ENV=production vite build",
-    "check": "tsc --noEmit -p tsconfig.json"
+    "deploy": "npm run build && node scripts/deploy.mjs",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "test": "node scripts/smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

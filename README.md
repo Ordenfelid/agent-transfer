@@ -26,13 +26,15 @@
 
 ## 开发
 
-工程位于 `{工作空间}/data/plugins/download-asset/`，产物直接输出到工程根目录（思源按 `<插件目录>/index.js` 加载）。
+源码位于思源工作空间之外（避免 `node_modules` 进入内核同步/快照），构建产物统一进 `dist/`，用 `npm run deploy` 安装到工作空间（目标目录可用 `SIYUAN_PLUGIN_DIR` 覆盖）。
 
 ```bash
 npm install
-npm run dev      # watch 构建，改动后思源里禁用→启用插件即可重载
+npm run deploy   # 构建 + 安装 dist/ 到 {工作空间}/data/plugins/download-asset/
+npm run dev      # watch 构建 dist/；改完拷过去或 deploy 后，思源里禁用→启用插件即可重载
 npm run build    # 发布构建：输出 dist/ 并打包 package.zip
 npm run check    # tsc 类型检查
+npm test         # mock 内核的 handler 冒烟测试（21 条断言）
 ```
 
 验证顺序：思源重启后，先在「设置 → 集市/插件」启用本插件；再到 **Agent 设置的工具列表**确认 `download_asset` 出现且勾选；最后让 Agent 下载一个真实链接，观察审批弹窗与 `assets/` 目录落盘。

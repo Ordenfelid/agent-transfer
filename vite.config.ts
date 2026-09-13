@@ -3,14 +3,13 @@ import { defineConfig, type PluginOption } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import zipPack from "vite-plugin-zip-pack";
 
+// 源码在工作空间外，产物统一进 dist/（完整的插件目录，可直接部署/打包）；
+// package.zip 仅发布构建时生成。安装到思源工作空间用 npm run deploy。
 const isDev = process.env.NODE_ENV === "development";
-// 开发产物直接输出到工程根目录（工程本身位于 data/plugins/ 下，
-// 思源按 <插件目录>/index.js 加载），发布产物输出到 dist/ 并打包 package.zip
-const outputDir = isDev ? "." : "dist";
 
 export default defineConfig({
     build: {
-        outDir: outputDir,
+        outDir: "dist",
         emptyOutDir: false,
         minify: !isDev,
         sourcemap: isDev ? "inline" : false,
@@ -27,22 +26,24 @@ export default defineConfig({
             },
         },
     },
-    plugins: (isDev
-        ? []
-        : [
-            viteStaticCopy({
-                targets: [
-                    { src: "./plugin.json", dest: "./" },
-                    { src: "./i18n/*.json", dest: "./" },
-                    { src: "./icon.png", dest: "./" },
-                    { src: "./preview.png", dest: "./" },
-                    { src: "./README*.md", dest: "./" },
-                ],
-            }),
-            zipPack({
-                inDir: "./dist",
-                outDir: "./",
-                outFileName: "package.zip",
-            }),
-        ]) as PluginOption[],
+    plugins: ([
+        viteStaticCopy({
+            targets: [
+                { src: "./plugin.json", dest: "./" },
+                { src: "./i18n/*.json", dest: "./" },
+                { src: "./icon.png", dest: "./" },
+                { src: "./preview.png", dest: "./" },
+                { src: "./README*.md", dest: "./" },
+            ],
+        }),
+        ...(isDev
+            ? []
+            : [
+                zipPack({
+                    inDir: "./dist",
+                    outDir: "./",
+                    outFileName: "package.zip",
+                }),
+            ]),
+    ]) as PluginOption[],
 });

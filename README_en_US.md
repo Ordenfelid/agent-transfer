@@ -24,13 +24,15 @@ Registers an agent tool named `download_asset`:
 
 ## Development
 
-The project lives inside `{workspace}/data/plugins/download-asset/`; build output goes to the project root (SiYuan loads `<plugin dir>/index.js`).
+The source lives outside the SiYuan workspace (keeps `node_modules` out of kernel sync/snapshot); builds go to `dist/`, and `npm run deploy` installs them into the workspace (override the target with `SIYUAN_PLUGIN_DIR`).
 
 ```bash
 npm install
-npm run dev      # watch build; disable->enable the plugin in SiYuan to reload
+npm run deploy   # build + install dist/ into {workspace}/data/plugins/download-asset/
+npm run dev      # watch build into dist/; deploy, then disable->enable the plugin to reload
 npm run build    # release build: dist/ + package.zip
 npm run check    # tsc type check
+npm test         # handler smoke tests against a mocked kernel (21 assertions)
 ```
 
 Requires SiYuan >= 3.8.0.
