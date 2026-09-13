@@ -1,0 +1,33 @@
+{
+  "name": "download-asset",
+  "author": "ordis",
+  "url": "",
+  "version": "0.1.0",
+  "minAppVersion": "3.8.0",
+  "backends": [
+    "all"
+  ],
+  "frontends": [
+    "all"
+  ],
+  "displayName": {
+    "default": "Download Asset",
+    "zh_CN": "下载资源到附件"
+  },
+  "description": {
+    "default": "Adds an agent tool that downloads a file from a URL and saves it into the workspace assets folder.",
+    "zh_CN": "为思源 Agent 增加一个工具：把给定链接的资源下载并保存到工作空间 assets 目录，返回可直接引用的附件路径。"
+  },
+  "readme": {
+    "default": "README_en_US.md",
+    "zh_CN": "README.md"
+  },
+  "icon": "icon.png",
+  "preview": "preview.png",
+  "keywords": [
+    "agent",
+    "tool",
+    "download",
+    "asset"
+  ]
+}
