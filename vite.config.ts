@@ -15,7 +15,7 @@ export default defineConfig({
         sourcemap: isDev ? "inline" : false,
         lib: {
             entry: resolve(import.meta.dirname, "src/index.ts"),
-            name: "DownloadAssetPlugin",
+            name: "AgentTransferPlugin",
             fileName: () => "index.js",
             formats: ["cjs"],
         },
@@ -31,6 +31,7 @@ export default defineConfig({
             targets: [
                 { src: "./plugin.json", dest: "./" },
                 { src: "./i18n/*.json", dest: "./" },
+                { src: "./index.css", dest: "./" },
                 { src: "./icon.png", dest: "./" },
                 { src: "./preview.png", dest: "./" },
                 { src: "./README*.md", dest: "./" },

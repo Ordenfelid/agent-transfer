@@ -1,4 +1,27 @@
 {
   "toolTitle": "Download Asset",
-  "toolName": "download_asset"
+  "toolName": "download_asset",
+  "uploadToolTitle": "Upload Asset",
+  "uploadDialogTitle": "Upload Confirmation",
+  "uploadDialogIntro": "The agent wants to upload a workspace asset to an external URL",
+  "uploadDialogTargetLabel": "Target URL (editable; use wildcards when saving to a list, path is ignored)",
+  "uploadDialogHint": "e.g. https://*.example.com matches example.com and all its subdomains",
+  "uploadBtnDeny": "Deny",
+  "uploadBtnBlacklist": "Blacklist",
+  "uploadBtnAllowOnce": "Allow once",
+  "uploadBtnWhitelist": "Whitelist & upload",
+  "uploadBlacklistAdded": "Added to blacklist: ",
+  "uploadWhitelistAdded": "Added to whitelist: ",
+  "uploadToastUploaded": "Uploaded",
+  "settingsWhitelist": "Upload whitelist (no confirmation)",
+  "settingsBlacklist": "Upload blacklist (always rejected)",
+  "settingsSaved": "Rules saved",
+  "settingsLog": "Debug log (agent calls)",
+  "settingsLogDesc": "Records the args, gating verdicts, user decisions and network results of every download_asset / upload_asset call (secret plaintext auto-redacted) to help locate agent issues. The most recent entries persist with the plugin data and can be exported as .txt; clearing cannot be undone.",
+  "logExport": "Export log",
+  "logClear": "Clear log",
+  "logCleared": "Log cleared",
+  "logExported": "Log exported:",
+  "logEmpty": "No log entries yet",
+  "logEntriesUnit": "entries"
 }

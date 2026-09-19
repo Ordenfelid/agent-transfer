@@ -1,8 +1,8 @@
 {
-  "name": "download-asset",
-  "version": "0.1.0",
+  "name": "agent-transfer",
+  "version": "0.4.1",
   "type": "module",
-  "description": "SiYuan agent tool: download a file from a URL into the workspace assets folder",
+  "description": "SiYuan agent tools: download a URL into workspace assets; upload assets to user-gated URLs (raw/multipart body, {{secrets}} headers); redacted debug log",
   "license": "MIT",
   "engines": {
     "node": ">=20"

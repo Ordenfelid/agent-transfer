@@ -1,8 +1,8 @@
 {
-  "name": "download-asset",
+  "name": "agent-transfer",
   "author": "ordis",
-  "url": "",
-  "version": "0.1.0",
+  "url": "https://github.com/Ordenfelid/agent-transfer",
+  "version": "0.4.1",
   "minAppVersion": "3.8.0",
   "backends": [
     "all"
@@ -11,12 +11,12 @@
     "all"
   ],
   "displayName": {
-    "default": "Download Asset",
-    "zh_CN": "下载资源到附件"
+    "default": "Agent Upload & Download",
+    "zh_CN": "Agent 上传下载"
   },
   "description": {
-    "default": "Adds an agent tool that downloads a file from a URL and saves it into the workspace assets folder.",
-    "zh_CN": "为思源 Agent 增加一个工具：把给定链接的资源下载并保存到工作空间 assets 目录，返回可直接引用的附件路径。"
+    "default": "Two agent tools: download a web file into workspace assets, and upload an asset to any URL — non-whitelisted targets ask for confirmation first and can be whitelisted/blacklisted in one click. Credentials stay in SiYuan's secret store, never in the chat or logs.",
+    "zh_CN": "为思源 Agent 增加上传/下载两个工具：把网络文件下载存入工作空间附件；把附件上传到指定链接，非白名单地址会先弹窗确认，可一键加入白/黑名单。凭据存于思源密钥库，不进对话与日志。"
   },
   "readme": {
     "default": "README_en_US.md",
@@ -27,7 +27,13 @@
   "keywords": [
     "agent",
     "tool",
+    "upload",
     "download",
-    "asset"
+    "transfer",
+    "asset",
+    "上传",
+    "下载",
+    "附件",
+    "文件"
   ]
 }

@@ -1,4 +1,5 @@
 import { fetchSyncPost } from "siyuan";
+import { logEvent } from "./logger";
 
 // forwardProxy 会把响应体整个 base64 后载入内存，上限不能放开太大
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -41,7 +42,7 @@ const EXT_BY_MIME: Record<string, string> = {
 const PRIVATE_HOST = /^(localhost$|.*\.local$|.*\.internal$|127\.|10\.|192\.168\.|169\.254\.|0\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?$)/i;
 
 /** 工具层可预期错误：消息会原样返回给模型，用于其自我纠正 */
-class ToolError extends Error {}
+export class ToolError extends Error {}
 
 interface IWindowSiyuan {
     siyuan: { config: { api: { token: string } } };
@@ -60,10 +61,12 @@ export async function downloadToAsset(
     try {
         const target = parseTargetUrl(args.url);
         const requested = typeof args.filename === "string" ? sanitizeFilename(args.filename) : "";
+        logEvent("download_asset", "target", `下载 ${target.href}${requested ? `，指定文件名 ${requested}` : ""}`);
 
         const { bytes, contentType } = await httpGet(target.href);
 
         const mime = (contentType.split(";")[0] || "").trim().toLowerCase();
+        logEvent("download_asset", "fetched", `已取回 ${formatSize(bytes.length)}，${mime || "未知类型"}`);
         let filename = requested || inferFilename(target, contentType);
         if (!hasExt(filename)) {
             const ext = EXT_BY_MIME[mime];
@@ -75,6 +78,7 @@ export async function downloadToAsset(
         const path = await uploadAsset(new File([bytes], filename, {
             type: mime || "application/octet-stream",
         }));
+        logEvent("download_asset", "saved", `已保存 ${path}`);
 
         return {
             result: `已下载并保存为 ${path}（${formatSize(bytes.length)}，${mime || "未知类型"}）。可在文档中直接使用该路径引用此附件。`,
@@ -87,7 +91,7 @@ export async function downloadToAsset(
     }
 }
 
-function parseTargetUrl(raw: unknown): URL {
+export function parseTargetUrl(raw: unknown): URL {
     if (typeof raw !== "string" || !raw.trim()) {
         throw new ToolError("参数 url 缺失或不是字符串，请提供完整的 http(s) 链接");
     }
@@ -205,7 +209,17 @@ function base64ToBytes(b64: string): Uint8Array<ArrayBuffer> {
     return bytes;
 }
 
-function formatSize(n: number): string {
+// 分块转换，避免 btoa 参数超出调用栈限制
+export function bytesToBase64(bytes: Uint8Array): string {
+    let bin = "";
+    const CHUNK = 0x8000;
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+        bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+    }
+    return btoa(bin);
+}
+
+export function formatSize(n: number): string {
     if (n >= 1024 * 1024) {
         return (n / 1024 / 1024).toFixed(1) + " MB";
     }

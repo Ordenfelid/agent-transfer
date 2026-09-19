@@ -1,48 +1,44 @@
-# Download Asset（下载资源到附件）
+# Agent Transfer（Agent 上传下载）
 
-为思源笔记 [Agent](https://b3log.org/siyuan) 提供一个工具：**把给定链接的资源下载并保存到工作空间 `assets/` 目录**，返回可直接在文档中引用的附件路径。
+为思源笔记 Agent 提供两个工具：把网络文件**下载**存入工作空间附件、把附件**上传**到指定链接。需要思源笔记 ≥ 3.8.0；工具执行时思源自带的 Agent 审批弹窗照常出现。
 
-## 它做什么
+对 Agent 说「下载这个图片：https://example.com/a.png」即可体验下载；上传前会弹出确认框，由你决定是否放行。
 
-注册一个名为 `download_asset` 的 Agent 工具：
+## 下载：把网络文件存入附件
+
+Agent 工具 `download_asset`（`url` 必填；`filename` 可选，缺省自动推断并补全扩展名）。
+
+- 文件存入工作空间 `assets/`，按思源规范自动命名去重，返回可在文档中直接引用的附件路径。
+- 单文件上限 50 MB；仅支持 http/https 链接，本机/内网地址会被拒绝。
+- 失败时 Agent 会收到具体原因，可自行纠正参数后重试。
+
+## 上传：把附件发到外部链接（每次经你确认）
+
+Agent 工具 `upload_asset`。**非白名单地址在上传前会弹出确认框**，显示文件名、大小与目标地址：
+
+- **放行一次 / 拒绝一次**：只影响本次；
+- **加白名单并上传 / 加黑名单**：地址可先编辑成通配形式（如 `https://*.example.com`）再保存——白名单以后免确认，黑名单直接拒绝；
+- 黑名单地址不弹窗、直接拒绝；白名单地址静默上传。
+
+名单在插件「设置」里维护。规则写法：每行一条 `scheme://host[:port]`，支持 `https://*.example.com` 通配（含子域），路径不参与匹配，`#` 为注释。
+
+参数：
 
 | 参数 | 必填 | 说明 |
 | --- | --- | --- |
-| `url` | 是 | 要下载资源的完整 http(s) 链接 |
-| `filename` | 否 | 保存使用的文件名（含扩展名），缺省时从 URL 推断 |
+| `path` | 是 | assets 内的文件；可只写原始文件名，自动匹配思源的时间戳后缀副本 |
+| `url` | 是 | 接收文件的 http(s) 链接，支持 `{{vars.名称}}` 变量 |
+| `method` | 否 | `POST`（默认）或 `PUT` |
+| `headers` | 否 | 附加请求头；凭据用 `{{secrets.名称}}` 引用（见下） |
+| `multipart` | 否 | `true` 时按表单方式上传，适配网盘/文件分享类接口 |
+| `fileField` / `fields` | 否 | 表单模式下的文件字段名（默认 `file`）与附带文本字段 |
 
-对 Agent 说「下载这个图片：https://example.com/a.png」即可触发。
+上传成功后，远端响应（如文件分享链接）会回传给 Agent。限制：单文件 32 MB；仅 http/https，本机/内网地址一律拒绝；只能上传 assets 内的文件。
 
-- **下载**走内核代理 `/api/network/forwardProxy`（不受浏览器 CORS 限制），`base64` 返回后还原。
-- **入库**走 `/api/asset/upload`（`assetsDirPath: /assets/`），由内核按思源资产命名规范自动重命名去重，最终路径取自返回的 `succMap`。
-- **副作用声明** `localWrite + dataEgress`：Agent 执行该工具前会先弹审批确认。
+### 凭据（token 等鉴权信息）
 
-## 内置约束
+在 **思源 设置 → AI → 密钥** 里配置密钥及其允许的主机，Agent 在请求头中以 `{{secrets.名称}}` 引用。明文凭据不会出现在对话、日志或返回结果里，也只会发送给你授权过的主机。
 
-- 仅允许 `http/https`；拒绝本机/内网地址（localhost、127/8、10/8、172.16/12、192.168/16、169.254/16 等）。
-- 单文件上限 50 MB（内核代理会把响应体整个载入内存）。
-- 文件名会剥掉路径部分与控制字符；无扩展名时按 Content-Type 补全。
-- 所有失败都返回 `error` 字符串给模型（含原因），便于其自行纠正参数后重试。
+## 调试日志
 
-## 开发
-
-源码位于思源工作空间之外（避免 `node_modules` 进入内核同步/快照），构建产物统一进 `dist/`，用 `npm run deploy` 安装到工作空间（目标目录可用 `SIYUAN_PLUGIN_DIR` 覆盖）。
-
-```bash
-npm install
-npm run deploy   # 构建 + 安装 dist/ 到 {工作空间}/data/plugins/download-asset/
-npm run dev      # watch 构建 dist/；改完拷过去或 deploy 后，思源里禁用→启用插件即可重载
-npm run build    # 发布构建：输出 dist/ 并打包 package.zip
-npm run check    # tsc 类型检查
-npm test         # mock 内核的 handler 冒烟测试（21 条断言）
-```
-
-验证顺序：思源重启后，先在「设置 → 集市/插件」启用本插件；再到 **Agent 设置的工具列表**确认 `download_asset` 出现且勾选；最后让 Agent 下载一个真实链接，观察审批弹窗与 `assets/` 目录落盘。
-
-## 发布（可选）
-
-`npm run build` 生成 `package.zip`；按版本打 tag 建 GitHub Release 并上传 `package.zip`；首次上架集市需向 [siyuan-note/bazaar](https://github.com/siyuan-note/bazaar) 的 `plugins.txt` 添加本仓库后提 PR。发布前请补全 `plugin.json` 中的 `url` 字段并替换 `icon.png` / `preview.png`。
-
-## 要求
-
-- 思源笔记 ≥ 3.8.0（`addAgentCapability` 所需的最低版本）。
+插件「设置」里可导出每次调用的脱敏日志（参数、名单判定、你的决策、网络结果；密钥自动打码）为 `.txt`，用于定位 Agent 调用问题；保留最近 2000 条，也可一键清空。
