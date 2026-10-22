@@ -2,9 +2,12 @@
   "name": "agent-transfer",
   "author": "ordis",
   "url": "https://github.com/Ordenfelid/agent-transfer",
-  "version": "0.4.1",
-  "minAppVersion": "3.8.0",
+  "version": "0.5.0",
+  "minAppVersion": "3.8.5",
   "backends": [
+    "all"
+  ],
+  "kernels": [
     "all"
   ],
   "frontends": [
@@ -15,8 +18,8 @@
     "zh_CN": "Agent 上传下载"
   },
   "description": {
-    "default": "Two agent tools: download a web file into workspace assets, and upload an asset to any URL — non-whitelisted targets ask for confirmation first and can be whitelisted/blacklisted in one click. Credentials stay in SiYuan's secret store, never in the chat or logs.",
-    "zh_CN": "为思源 Agent 增加上传/下载两个工具：把网络文件下载存入工作空间附件；把附件上传到指定链接，非白名单地址会先弹窗确认，可一键加入白/黑名单。凭据存于思源密钥库，不进对话与日志。"
+    "default": "Two kernel-side tools for the SiYuan agent and external MCP clients: download a web file or base64 payload into workspace assets, and upload an asset to any URL (raw or multipart body, {{secrets}} credential references). Traffic goes through the kernel proxy and approval flow; credentials stay in SiYuan's secret store, never in the chat or logs.",
+    "zh_CN": "为思源 Agent 与外部 MCP 客户端提供上传/下载两个内核工具：把网络文件或 base64 内容存入工作空间附件；把附件上传到指定链接（表单/原始体、{{secrets}} 凭据引用）。流量走内核网络代理与审批流，凭据存于思源密钥库，不进对话与日志。"
   },
   "readme": {
     "default": "README_en_US.md",
@@ -31,6 +34,7 @@
     "download",
     "transfer",
     "asset",
+    "mcp",
     "上传",
     "下载",
     "附件",

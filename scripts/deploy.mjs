@@ -8,8 +8,8 @@ const target =
     process.env.SIYUAN_PLUGIN_DIR ||
     join(homedir(), "SiYuan", "data", "plugins", "agent-transfer");
 
-if (!existsSync(resolve(distDir, "index.js"))) {
-    console.error("dist/index.js 不存在，请先执行 npm run build");
+if (!existsSync(resolve(distDir, "kernel.js"))) {
+    console.error("dist/kernel.js 不存在，请先执行 npm run build");
     process.exit(1);
 }
 

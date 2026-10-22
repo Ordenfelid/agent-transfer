@@ -1,8 +1,8 @@
 {
   "name": "agent-transfer",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "type": "module",
-  "description": "SiYuan agent tools: download a URL into workspace assets; upload assets to user-gated URLs (raw/multipart body, {{secrets}} headers); redacted debug log",
+  "description": "SiYuan kernel plugin: download a URL or base64 payload into workspace assets; upload assets to any URL (raw/multipart body, {{secrets}} headers) — serves the in-app agent and external MCP clients",
   "license": "MIT",
   "engines": {
     "node": ">=20"
@@ -20,7 +20,6 @@
     "siyuan": "1.2.7",
     "typescript": "^6.0.3",
     "vite": "^8.2.2",
-    "vite-plugin-static-copy": "^4.1.1",
     "vite-plugin-zip-pack": "^1.2.4"
   }
 }

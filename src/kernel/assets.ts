@@ -1,18 +1,9 @@
-// assets 路径宽松解析：agent 可只写原始文件名，自动匹配思源插入附件时
+// assets 路径宽松解析与读取：agent 可只写原始文件名，自动匹配思源插入附件时
 // 加上的 `-YYYYMMDDHHMMSS-随机串` 时间戳后缀。流程：readDir 目标目录 →
 // 精确匹配 → 后缀模糊匹配 → 唯一命中即用，多命中报错列出候选。
 
-import { ToolError } from "./download";
-
-interface IWindowSiyuan {
-    siyuan: { config: { api: { token: string } } };
-}
-
-export interface IDirEntry {
-    name: string;
-    isDir?: boolean;
-    updated?: number;
-}
+import { ToolError } from "./errors";
+import { kernelPostJson } from "./runtime";
 
 /** 规范化为 assets 内的相对路径（无 assets/ 前缀，拒绝任何越段/空段） */
 export function normalizeAssetRelPath(raw: unknown): string {
@@ -21,8 +12,11 @@ export function normalizeAssetRelPath(raw: unknown): string {
     }
     let p = raw.trim().replace(/\\/g, "/");
     p = p.split("?")[0].split("#")[0].replace(/^\/+/, "");
-    if (p.split("/").some((seg) => seg === ".." || seg === "." || seg === "")) {
-        throw new ToolError(`路径不合法（不允许相对段）：${raw}`);
+    const segs = p.split("/");
+    for (const seg of segs) {
+        if (seg === ".." || seg === "." || seg === "") {
+            throw new ToolError(`路径不合法（不允许相对段）：${raw}`);
+        }
     }
     if (p === "assets") {
         throw new ToolError("path 仅给出了 assets 目录本身，请附带文件名");
@@ -41,9 +35,10 @@ export async function resolveAssetPath(raw: unknown): Promise<string> {
     const base = slash === -1 ? rel : rel.slice(slash + 1);
 
     const files = (await listAssetDir(dir)).filter((e) => !e.isDir);
-    const exact = files.find((e) => e.name === base);
-    if (exact) {
-        return dir ? `${dir}/${base}` : base;
+    for (const entry of files) {
+        if (entry.name === base) {
+            return dir ? dir + "/" + base : base;
+        }
     }
 
     const dot = base.lastIndexOf(".");
@@ -53,7 +48,7 @@ export async function resolveAssetPath(raw: unknown): Promise<string> {
         const re = new RegExp(`^${escapeRegExp(stem)}-\\d{14}-.+\\.${escapeRegExp(ext)}$`);
         const hits = files.filter((e) => re.test(e.name));
         if (hits.length === 1) {
-            return dir ? `${dir}/${hits[0].name}` : hits[0].name;
+            return dir ? dir + "/" + hits[0].name : hits[0].name;
         }
         if (hits.length > 1) {
             const names = hits.map((h) => h.name).sort().join("、");
@@ -67,22 +62,19 @@ export async function resolveAssetPath(raw: unknown): Promise<string> {
     );
 }
 
-async function listAssetDir(dir: string): Promise<IDirEntry[]> {
-    const token = (window as unknown as IWindowSiyuan).siyuan.config.api.token;
-    const dirPath = `/data/assets/${dir ? dir + "/" : ""}`;
-    const resp = await fetch("/api/file/readDir", {
-        method: "POST",
-        headers: { Authorization: `Token ${token}` },
-        body: JSON.stringify({ path: dirPath }),
+interface DirEntry {
+    name: string;
+    isDir?: boolean;
+}
+
+async function listAssetDir(dir: string): Promise<DirEntry[]> {
+    const json = await kernelPostJson("/api/file/readDir", {
+        path: "/data/assets/" + (dir ? dir + "/" : ""),
     });
-    if (!resp.ok) {
-        throw new ToolError(`读取 assets 目录失败：接口返回 HTTP ${resp.status}（${dirPath}）`);
+    if (json.code !== 0) {
+        throw new ToolError(`读取 assets 目录失败：${json.msg || "未知错误"}（assets/${dir}）`);
     }
-    const json = await resp.json().catch(() => null);
-    if (!json || json.code !== 0) {
-        throw new ToolError(`读取 assets 目录失败：${json?.msg || "未知错误"}（${dirPath}）`);
-    }
-    return Array.isArray(json.data) ? json.data : [];
+    return Array.isArray(json.data) ? (json.data as DirEntry[]) : [];
 }
 
 function escapeRegExp(s: string): string {
